@@ -1,0 +1,85 @@
+---
+title: "2016 Presidential Election Analysis"
+author: "Amit Nagar"
+date: "Friday, September 25, 2015"
+output: html_document
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(tm)
+library(SnowballC)
+library(ggplot2)
+library(wordcloud)
+#setwd("C://Users//I013285//Documents//Amit//Projects//elections//DataSets")
+```
+
+Datasource: 
+Twitter data of the Republican and Democratic candidates for 2016 Presential elections.  
+We extracted 10K tweets for eachof the following candidates:
+"@HillaryClinton OR @realDonaldTrump OR @RealBencarson OR @JebBush OR @GovChristie OR @tedcruz OR @CarlyFiorina OR GovMikeHuckabee OR BobbyJindal OR @JohnKasich OR @RandPaul OR @ScottWalker OR @RickSantorum OR @marcorubio"
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+vc.corpus <- VCorpus(DirSource("C://Users//I013285//Documents//Amit//Project//elections//DataSets//allData", encoding = "UTF-8"))
+# vc.corpus <-  tm_map(vc.corpus,tolower)
+# vc.corpus <- tm_map(vc.corpus, PlainTextDocument)
+vc.corpus <-  tm_map(vc.corpus, stripWhitespace)
+vc.corpus <-  tm_map(vc.corpus, stemDocument)
+vc.corpus <-  tm_map(vc.corpus, removeWords, stopwords("english"))
+```
+
+Start by creating a term document matrix (ref. Wikipedia: "matrix that describes the frequency of terms that occur in a collection of documents.")
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+election2016Issues <- c("Foreign", "Homeland", "Security", "War", "Trade", "Immigration", "Energy", "Oil", "budget", "economy", "reform", "tax", "socialsecurity", "corporations", "jobs", "guns", "crime", "drug", "health", "technology", "environment", "education", "civil", "abortion", "planned", "parenthood", "welfare", "families", "children", "school")
+
+tdm <- TermDocumentMatrix(vc.corpus,list(dictionary = election2016Issues))
+
+tdm.vc.corpus <- TermDocumentMatrix(vc.corpus)
+
+tdm.vc.corpus;
+
+```
+
+Most popular tweeted keywords with freq of 20 or more (overall)
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#allTweetsFreq <- findFreqTerms(tdm.vc.corpus, lowfreq = 20)
+#allTweetsFreq
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+tdm <- TermDocumentMatrix(vc.corpus,list(dictionary = election2016Issues))
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+tdm;
+```
+
+
+Note the issues selected for analysis relate to key election 2016 issues as published on http://www.ontheissues.org/Issues.htm.
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+election2016Issues;
+```
+
+
+From the term document matrix, first let us see the issues that the candidates are NOT tweeting about.
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+findFreqTerms(tdm, highfreq = 5)
+```
+
+
+Next, lets find the more popular tweeted issues with freq of 20 or more
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+findFreqTerms(tdm, lowfreq = 20)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+termFreq <- rowSums(as.matrix(tdm))
+termFreq <- subset(termFreq,termFreq >= 20)
+termFreq;
+qplot(names(termFreq),termFreq, main="TermFrequencies",xlab="Terms") + geom_bar(stat="identity") + scale_fill_brewer() + coord_flip() 
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+tweets.matrix <- as.matrix(tdm)
+wordcloud(vc.corpus, scale=c(5,0.5), max.words=100, random.order=FALSE, rot.per=0.35, use.r.layout=FALSE, colors=brewer.pal(8, "Dark2"))
+```
